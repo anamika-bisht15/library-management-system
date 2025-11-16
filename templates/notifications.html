@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="fas fa-bell"></i> Email Notifications Center</h4>
+            </div>
+            <div class="card-body">
+                <!-- Notification Controls -->
+                <div class="mb-4">
+                    <h5><i class="fas fa-cog"></i> Notification Settings</h5>
+                    <form id="notificationForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="sendOverdue" name="send_overdue" checked>
+                                    <label class="form-check-label" for="sendOverdue">
+                                        <strong>Send Overdue Notifications</strong>
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Send emails for books that are already overdue
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch mb-3">
+                                    <input class="form-check-input" type="checkbox" id="sendReminders" name="send_reminders" checked>
+                                    <label class="form-check-label" for="sendReminders">
+                                        <strong>Send Reminder Notifications</strong>
+                                    </label>
+                                    <small class="form-text text-muted d-block">
+                                        Send emails for books due in next 3 days
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-check form-switch mb-4">
+                            <input class="form-check-input" type="checkbox" id="testMode" name="test_mode">
+                            <label class="form-check-label" for="testMode">
+                                <strong>Test Mode</strong>
+                            </label>
+                            <small class="form-text text-muted d-block">
+                                Preview what would be sent without actually sending emails
+                            </small>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                            <button type="button" id="previewBtn" class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i> Preview Notifications
+                            </button>
+                            <button type="button" id="sendNotificationsBtn" class="btn btn-success">
+                                <i class="fas fa-paper-plane"></i> Send Notifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Results Section -->
+                <div id="notificationResult"></div>
+
+                <!-- Live Preview Section -->
+                <div id="livePreview" class="mt-4" style="display: none;">
+                    <h5><i class="fas fa-desktop"></i> Live Preview</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning">
+                                    <h6 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Overdue Books</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="overduePreview"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0"><i class="fas fa-clock"></i> Upcoming Reminders</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="reminderPreview"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Sidebar -->
+    <div class="col-md-4">
+        <!-- Quick Stats -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Quick Stats</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-danger text-white rounded">
+                            <h4 class="mb-0">{{ stats.overdue_count }}</h4>
+                            <small>Overdue Books</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="p-3 bg-warning text-dark rounded">
+                            <h4 class="mb-0">{{ stats.reminder_count }}</h4>
+                            <small>Due Soon</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-info text-white rounded">
+                            <h4 class="mb-0">{{ stats.total_users }}</h4>
+                            <small>Total Users</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 bg-success text-white rounded">
+                            <h4 class="mb-0">{{ stats.total_books }}</h4>
+                            <small>Total Books</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overdue Books List -->
+        {% if overdue_books %}
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5><i class="fas fa-exclamation-circle"></i> Currently Overdue</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for item in overdue_books %}
+                    <div class="list-group-item">
+                        <h6 class="mb-1">{{ item.book.title }}</h6>
+                        <small class="text-muted">User: {{ item.user.name }}</small><br>
+                        <small class="text-danger">Due: {{ item.due_date }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const previewBtn = document.getElementById('previewBtn');
+    const sendBtn = document.getElementById('sendNotificationsBtn');
+    const notificationForm = document.getElementById('notificationForm');
+    const resultDiv = document.getElementById('notificationResult');
+    const livePreview = document.getElementById('livePreview');
+    const overduePreview = document.getElementById('overduePreview');
+    const reminderPreview = document.getElementById('reminderPreview');
+
+    // Preview functionality
+    previewBtn.addEventListener('click', function() {
+        const formData = new FormData(notificationForm);
+        
+        showLoading('Scanning for notifications...');
+        
+        fetch('/admin/send-notifications', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success) {
+                // Show live preview
+                livePreview.style.display = 'block';
+                
+                // Update preview sections
+                if (data.results.overdue_notifications > 0) {
+                    overduePreview.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-envelope"></i>
+                            <strong>${data.results.overdue_notifications} overdue notification(s) ready</strong>
+                            <p class="mb-0 small">These emails will include fine calculations.</p>
+                        </div>
+                    `;
+                } else {
+                    overduePreview.innerHTML = '<p class="text-muted">No overdue notifications to send</p>';
+                }
+                
+                if (data.results.reminder_notifications > 0) {
+                    reminderPreview.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="fas fa-clock"></i>
+                            <strong>${data.results.reminder_notifications} reminder(s) ready</strong>
+                            <p class="mb-0 small">Friendly reminders for upcoming due dates.</p>
+                        </div>
+                    `;
+                } else {
+                    reminderPreview.innerHTML = '<p class="text-muted">No reminder notifications to send</p>';
+                }
+                
+                resultDiv.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="fas fa-eye"></i>
+                        <strong>Preview Complete</strong>
+                        <p class="mb-0">Found ${data.results.overdue_notifications + data.results.reminder_notifications} total notifications to send.</p>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Preview Failed</strong>
+                        <p class="mb-0">${data.message}</p>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            console.error('Error:', error);
+            resultDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Network Error</strong>
+                    <p class="mb-0">Unable to connect to the server.</p>
+                </div>
+            `;
+        });
+    });
+
+    // Send notifications functionality
+    sendBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to send these notifications?')) {
+            const formData = new FormData(notificationForm);
+            const originalText = this.innerHTML;
+            
+            // Update button to show loading state
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            this.disabled = true;
+            previewBtn.disabled = true;
+            
+            // Clear previous results
+            resultDiv.innerHTML = '';
+            
+            fetch('/admin/send-notifications', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Restore buttons
+                this.innerHTML = originalText;
+                this.disabled = false;
+                previewBtn.disabled = false;
+                
+                if (data.success) {
+                    const successMessage = `
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-check-circle"></i> Notifications Sent Successfully!</h5>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Overdue Notifications:</strong> ${data.results.overdue_notifications}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Reminder Notifications:</strong> ${data.results.reminder_notifications}</p>
+                                </div>
+                            </div>
+                            <p class="mb-0"><small>${data.message}</small></p>
+                        </div>
+                    `;
+                    resultDiv.innerHTML = successMessage;
+                    
+                    // Hide live preview after sending
+                    livePreview.style.display = 'none';
+                    
+                    // Reload page after 3 seconds to update stats
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Failed to Send Notifications</h5>
+                            <p class="mb-0">${data.message || 'An error occurred while sending notifications.'}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                // Restore buttons
+                this.innerHTML = originalText;
+                this.disabled = false;
+                previewBtn.disabled = false;
+                
+                console.error('Error:', error);
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Network Error</h5>
+                        <p class="mb-0">Unable to connect to the server. Please check your internet connection.</p>
+                    </div>
+                `;
+            });
+        }
+    });
+
+    // Utility functions
+    function showLoading(message = 'Loading...') {
+        let loadingDiv = document.getElementById('loadingOverlay');
+        if (!loadingDiv) {
+            loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loadingOverlay';
+            loadingDiv.className = 'loading-overlay';
+            loadingDiv.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="loading-message">${message}</div>
+                </div>
+            `;
+            document.body.appendChild(loadingDiv);
+        }
+    }
+
+    function hideLoading() {
+        const loadingDiv = document.getElementById('loadingOverlay');
+        if (loadingDiv) {
+            loadingDiv.remove();
+        }
+    }
+});
+</script>
+{% endblock %}

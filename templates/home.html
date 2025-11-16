@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 60px 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        p {
+            color: #666;
+            margin-bottom: 50px;
+            font-size: 1.1em;
+        }
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn-login {
+            background: #667eea;
+            color: white;
+            min-width: 150px;
+        }
+        .btn-login:hover {
+            background: #5568d3;
+        }
+        .btn-register {
+            background: #28a745;
+            color: white;
+            min-width: 150px;
+        }
+        .btn-register:hover {
+            background: #218838;
+        }
+        .divider {
+            margin: 40px 0;
+            padding: 20px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+        .divider p {
+            margin: 10px 0;
+            color: #999;
+            font-size: 0.9em;
+        }
+        .info {
+            margin-top: 30px;
+            text-align: left;
+            color: #666;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .info h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 1em;
+        }
+        .info ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .info li {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        .librarian-link {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .librarian-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .librarian-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Library</h1>
+        <p>Student Portal</p>
+        
+        <div class="button-group">
+            <a href="{{ url_for('login_student') }}" class="btn btn-login">
+                🔓 Login
+            </a>
+            <a href="{{ url_for('register_student') }}" class="btn btn-register">
+                ✍️ Register
+            </a>
+        </div>
+
+        <div class="divider">
+            <p>New to the library?</p>
+        </div>
+
+        <div class="info">
+            <h3>✨ As a Student, you can:</h3>
+            <ul>
+                <li>Browse available books</li>
+                <li>Borrow books for a specified period</li>
+                <li>Track your borrowed books</li>
+                <li>Check your fines and due dates</li>
+            </ul>
+        </div>
+
+        <div class="librarian-link">
+            <p>Looking for librarian features?</p>
+            <a href="{{ url_for('index') }}">View Librarian Dashboard →</a>
+        </div>
+    </div>
+</body>
+</html>

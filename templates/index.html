@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_books }}</h4>
+                        <p>Total Books</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-book fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total_users }}</h4>
+                        <p>Total Users</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.overdue_books }}</h4>
+                        <p>Overdue Books</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('add_book') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Book
+                    </a>
+                    <a href="{{ url_for('add_user') }}" class="btn btn-success">
+                        <i class="fas fa-user-plus"></i> Add New User
+                    </a>
+                    <a href="{{ url_for('borrow_book') }}" class="btn btn-info text-white">
+                        <i class="fas fa-hand-holding"></i> Borrow Book
+                    </a>
+                    <a href="{{ url_for('books') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-search"></i> Search Books
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Available Books</h5>
+            </div>
+            <div class="card-body">
+                {% set available_books = [] %}
+                {% for book in library.get_all_books() %}
+                    {% if book.available > 0 %}
+                        {% set _ = available_books.append(book) %}
+                    {% endif %}
+                {% endfor %}
+                
+                {% if available_books %}
+                    <div class="list-group">
+                        {% for book in available_books[:5] %}
+                        <div class="list-group-item">
+                            <h6 class="mb-1">{{ book.title }}</h6>
+                            <small class="text-muted">by {{ book.author }}</small>
+                            <span class="badge bg-success float-end">{{ book.available }} available</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if available_books|length > 5 %}
+                    <div class="text-center mt-2">
+                        <small class="text-muted">and {{ available_books|length - 5 }} more books available</small>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted">No books available at the moment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>System Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Library Status:</strong>
+                    <span class="badge bg-success">Operational</span>
+                </div>
+                <div class="mb-3">
+                    <strong>Total Books:</strong> {{ stats.total_books }}
+                </div>
+                <div class="mb-3">
+                    <strong>Total Users:</strong> {{ stats.total_users }}
+                </div>
+                <div class="mb-3">
+                    <strong>Overdue Books:</strong> 
+                    <span class="badge {% if stats.overdue_books > 0 %}bg-danger{% else %}bg-success{% endif %}">
+                        {{ stats.overdue_books }}
+                    </span>
+                </div>
+                <div class="mb-3">
+                    <strong>System Version:</strong> 1.0.0
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Recent Activities</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item">
+                        <small class="text-muted">Just now</small><br>
+                        <span>Library system started successfully</span>
+                    </div>
+                    <div class="list-group-item">
+                        <small class="text-muted">Today</small><br>
+                        <span>Welcome to your new Library Management System!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
